@@ -41,3 +41,11 @@ export function sendAnswerToSignalingServer(peer, answer, server, myId) {
     );
   }
 }
+
+export function ping(server) {
+  server.send(
+    JSON.stringify({
+      type: "ping",
+    })
+  );
+}

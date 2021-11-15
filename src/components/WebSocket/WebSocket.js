@@ -6,6 +6,7 @@ import {
   sendCandidateToSignalingServer,
   sendOfferToRemotePeer,
   sendAnswerToSignalingServer,
+  ping,
 } from "./sendingFunctions";
 export const WebSocket = ({
   connect,
@@ -66,6 +67,9 @@ export const WebSocket = ({
             user,
           })
         );
+        const interval = setInterval(() => {
+          ping(server);
+        }, 60000);
         console.log("Connection established");
       };
       server.onmessage = (message) => {
