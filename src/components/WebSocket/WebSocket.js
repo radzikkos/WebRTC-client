@@ -69,7 +69,7 @@ export const WebSocket = ({
         );
         const interval = setInterval(() => {
           ping(server);
-        }, 60000);
+        }, 40000);
         console.log("Connection established");
       };
       server.onmessage = (message) => {
