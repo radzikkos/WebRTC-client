@@ -17,8 +17,10 @@ import {
   createAnswerOnRemoteDescription,
   addAnswerToLocalPeer,
   shareFile,
+  downloadFile,
 } from "../webRTC/connectionHandlers";
 import { InfoAboutFileDowloaded } from "../components/Home/InfoAboutFileDowloaded";
+import { DownloadMessage } from "../components/Home/DownloadMessage";
 
 export const Home = ({ emitOnlineStatus }) => {
   const [startApp, setStartApp] = useState(false);
@@ -37,6 +39,8 @@ export const Home = ({ emitOnlineStatus }) => {
   const [answerToRemote, setAnswerToRemote] = useState(null);
   const [fileIsSend, setFileIsSend] = useState([]);
   const [fileIsGet, setFileIsGet] = useState([]);
+  const [showDownloadMessage, setShowDownloadMessage] = useState(false);
+  const [fileToDownload, setFileToDownload] = useState(null);
   const navigate = useNavigate();
   const isUserLogged = async () => {
     const result = await auth.isAuthenticated();
@@ -96,7 +100,8 @@ export const Home = ({ emitOnlineStatus }) => {
       onaddStreamHandler,
       onIceCandidateHandler,
       onSendOfferToRemotePeer,
-      gettingFile
+      gettingFile,
+      onDowloadHandler
     );
     setPeers([...peers, remotePeer]);
   };
@@ -136,7 +141,8 @@ export const Home = ({ emitOnlineStatus }) => {
         myStream,
         onaddStreamHandler,
         onIceCandidateHandler,
-        gettingFile
+        gettingFile,
+        onDowloadHandler
       );
 
       const peer = {
@@ -238,6 +244,12 @@ export const Home = ({ emitOnlineStatus }) => {
     setPeers(newPeers);
     setStreams(newStreams);
   };
+
+  const onDowloadHandler = (blob, fileName) => {
+    setShowDownloadMessage(true);
+    setTimeout(setShowDownloadMessage(false), 10);
+    setFileToDownload({ blob, fileName });
+  };
   return (
     <div className="container-fluid">
       <WebSocket
@@ -321,6 +333,14 @@ export const Home = ({ emitOnlineStatus }) => {
             user={initiatorId}
             emitUserToConnect={emitUserToConnect}
             availibleRemotePeers={availibleRemotePeers}
+          />
+          <DownloadMessage
+            show={showDownloadMessage}
+            user={9}
+            availibleRemotePeers={availibleRemotePeers}
+            download={() => {
+              downloadFile(fileToDownload.blob, fileToDownload.fileName);
+            }}
           />
         </>
       )}

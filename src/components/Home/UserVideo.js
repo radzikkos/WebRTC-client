@@ -51,7 +51,7 @@ export const UserVideo = ({ startApp, userVideoIsReady, emitMyStream }) => {
   useEffect(() => {
     if (!hideMyVideo) {
       userVideo.current.srcObject = userStream;
-      userVideo.current.volume = 0.1;
+      userVideo.current.volume = 0.05;
     }
   }, [hideMyVideo]);
 

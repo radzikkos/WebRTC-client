@@ -21,7 +21,8 @@ export async function beginWebRTCTransaction(
   onaddStreamHandler,
   onIceCandidateHandler,
   sendOfferToRemotePeer,
-  gettingFile
+  gettingFile,
+  onDowloadHandler
 ) {
   try {
     const createdPeer = createPeer(
@@ -29,7 +30,8 @@ export async function beginWebRTCTransaction(
       localStream,
       onaddStreamHandler,
       onIceCandidateHandler,
-      gettingFile
+      gettingFile,
+      onDowloadHandler
     );
     const peer = {
       peer: createdPeer.peer,
@@ -80,7 +82,7 @@ function getProperDataType(dataType) {
   }
 }
 
-const downloadFile = (blob, fileName) => {
+export const downloadFile = (blob, fileName) => {
   const a = document.createElement("a");
   const url = window.URL.createObjectURL(blob);
   a.href = url;
@@ -91,13 +93,14 @@ const downloadFile = (blob, fileName) => {
 };
 
 const concatenateChunks = new Worker(worker_script);
-
+let isFileSendingFlag = null;
 export function createPeer(
   toId,
   localStream,
   onaddStreamHandler,
   onIceCandidateHandler,
-  onGettingFile
+  onGettingFile,
+  onDowloadHandler
 ) {
   const peer = new RTCPeerConnection(servers);
   // console.log("Created local peer connection");
@@ -142,7 +145,8 @@ export function createPeer(
             concatenateChunks.onmessage = (m) => {
               const arrayBuffer = m.data;
               const blob = new Blob([arrayBuffer], dataType);
-              downloadFile(blob, channel.label);
+              onDowloadHandler(blob, channel.label);
+              // downloadFile(blob, channel.label);
               receivedBuffers.length = 0;
               onGettingFileHandler(false, toId);
             };
@@ -173,6 +177,8 @@ export function createPeer(
     console.log("Opened channel");
   };
   dataChannel.onclose = function () {
+    if (isFileSendingFlag)
+      alert("Sending file error, please reconnect your connections");
     console.log("Channel closed");
   };
 
@@ -246,6 +252,7 @@ export const shareFile = async (peer, file, isFileSending) => {
       // const promises = [];
       const arrayBuffer = await file.arrayBuffer();
       isFileSending(true);
+      isFileSendingFlag = true;
       peer.dataChannel.send(dataType);
       for (let i = 0; i < arrayBuffer.byteLength; i += MAXIMUM_MESSAGE_SIZE) {
         if (amountInBuffer >= MAXIMUM_BUFFER_SIZE) {
@@ -261,6 +268,7 @@ export const shareFile = async (peer, file, isFileSending) => {
       }
       peer.dataChannel.send(END_OF_FILE_MESSAGE);
       isFileSending(false);
+      isFileSendingFlag = false;
       // const arrayBuffer = await file.arrayBuffer();
       // promises.push(peer.dataChannel.send(arrayBuffer));
 

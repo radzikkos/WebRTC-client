@@ -28,6 +28,7 @@ export const Navbar = (props) => {
     e.preventDefault();
     auth.logout(() => {
       navigate("/");
+      window.location.reload(true);
     });
   };
   useEffect(() => {
